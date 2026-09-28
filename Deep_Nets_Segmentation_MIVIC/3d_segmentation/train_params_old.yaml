@@ -1,0 +1,71 @@
+# =========================
+# train_params.yaml (rewritten)
+# =========================
+
+# data root path
+data_path: "/home/users/lliu/3dseg/MST/fs_ws_concat"
+
+# data_split_type options: "fixed", "kfold"
+data_split_type: "kfold"
+n_folds: 5
+# fold_id must be between 1 and n_folds
+fold_id: 5
+
+# augmentation parameters
+rand_crop_num_samples: 10
+roi_size: [96, 96, 32]
+pix_dim: [1.0, 1.0, 1.0]
+
+# training optimization options
+batch_size: 4
+learning_rate: 5.0e-4         
+in_channels: 2
+out_channels: 9
+max_iterations: 10000
+eval_num: 50
+
+# loss_name options: CrossEntropyLoss, DiceLoss, FocalLoss, GenDiceLoss, DiceCELoss, DiceFocalLoss
+loss_name: "DiceCELoss"
+
+# ---------------------------------------------
+# LR scheduler selection
+# options: "ReduceLROnPlateau", "StepLR", "CosineAnnealingLR", "CosineAnnealingWarmRestarts", "CyclicLR", "None"
+# ---------------------------------------------
+lr_scheduler: "CyclicLR"     
+
+# --- ReduceLROnPlateau (after validation, using validation metrics) ---
+rlrop_factor: 0.75
+rlrop_patience: 5
+
+# --- StepLR (after validation, typically per epeoch) ---
+slr_step: 40
+slr_gamma: 0.95
+
+# --- CosineAnnealingWarmRestarts (per iteration, no metric) ---
+# T_0 = number of "epochs"/cycles before first restart (we step per-iteration in code)
+# T_mult = cycle length multiplier
+# eta_min = minimum LR at the bottom of the cosine
+cawr_T0: 1000
+cawr_Tmult: 2
+cawr_eta_min: 5.0e-6
+
+# --- CyclicLR ---
+# These control the LR triangle cycle; code steps per-iteration.
+# For small-batch 3D med-imaging, these are safe starting points.
+clr_base_lr: 1.0e-6           # lower bound of LR
+clr_max_lr:  5.0e-4           # upper bound of LR (often your original learning_rate)
+clr_step_size_up:   1000      # iters from base -> max
+clr_step_size_down: 1000      # iters from max -> base (full cycle = 2000 iters)
+clr_mode: "triangular2"       # choose from {"triangular","triangular2","exp_range"}
+clr_gamma: 1.0                # only used for "exp_range" (decay per step)
+clr_cycle_momentum: false     # set true only if using SGD with momentum
+clr_base_momentum: 0.8        # only relevant if cycle_momentum: true
+clr_max_momentum:  0.95       # only relevant if cycle_momentum: true
+
+# Early stopping
+early_stopping_patience: 25
+early_stopping_min_delta: 0.001
+
+# Prediction model file (for inference)
+# pred_model_filename options: "best_metric_model.pth", "last_model.pth", or custom
+pred_model_file: "best_metric_model.pth"
